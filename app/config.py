@@ -5,9 +5,10 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     BASE_URL: str
     REDIS_URL: str
+    LUA_FOLDER_PATH: str
 
     model_config = SettingsConfigDict(
-        env_file=".env"
+        env_file=".env", extra="ignore"
     )
 settings = Settings()
 
