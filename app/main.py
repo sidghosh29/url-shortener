@@ -19,12 +19,15 @@ app = FastAPI(lifespan=lifespan)
 # cleanup code after it shuts down. In this case, it creates
 # the database tables before the app starts.
 
-app.include_router(urls_router)
-# This line includes the URL router from the urls module,
-# which contains the API endpoints for URL shortening and redirection.
-
-
-
 @app.get("/")
 def root():
     return {"message": "URL Shortener API"}
+
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
+
+
+app.include_router(urls_router)
+# This line includes the URL router from the urls module,
+# which contains the API endpoints for URL shortening and redirection.
