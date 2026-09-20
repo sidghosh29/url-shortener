@@ -8,12 +8,12 @@ from app.config import settings
 from app.redis_client import redis_client
 
 # LUA_SCRIPT_PATH = settings.LUA_FOLDER_PATH+"/fixed_window.lua"
-LUA_SCRIPT_PATH = Path(settings.LUA_FOLDER_PATH) / "fixed_window.lua"
+LUA_SCRIPT_PATH = Path(settings.LUA_FOLDER_PATH) / "token_bucket.lua"
 
 LUA_SCRIPT = Path(LUA_SCRIPT_PATH).read_text()
 
 
-class FixedWindowRateLimiter:
+class TokenBucketRateLimiter:
     def __init__(self, limit: int, window_size: int):
         self.limit = limit
         self.window_size = window_size
@@ -24,4 +24,6 @@ class FixedWindowRateLimiter:
         return bool(result)
 
 
-fixed_window_limiter = FixedWindowRateLimiter(limit=10, window_size=60)
+token_bucket_limiter = TokenBucketRateLimiter(
+    limit=settings.RATE_LIMIT_CAPACITY, window_size=settings.RATE_LIMIT_WINDOW
+)

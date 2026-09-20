@@ -9,50 +9,25 @@ from app.database import get_db
 from app.models import Url
 from app.redis_client import redis_client
 from app.schemas import UrlRequest, UrlResponse
-from app.utils import generate_random_base62_code, encode_base62
 from app.middleware.rate_limit import rate_limit
+from app.services.url_service import UrlService
 
 
 router = APIRouter()
 
 
-@router.post("/shorten", status_code=201, response_model=UrlResponse, dependencies=[Depends(rate_limit)])
-def shorten_url(
-    request: UrlRequest,
-    db: Session = Depends(get_db)
-):
+@router.post(
+    "/shorten",
+    status_code=201,
+    response_model=UrlResponse,
+    dependencies=[Depends(rate_limit)],
+)
+def shorten_url(request: UrlRequest, db: Session = Depends(get_db)):
+    service = UrlService(db)
     try:
-
-        url = Url(
-            original_url=str(request.url)
-        )
-
-        db.add(url)
-        db.flush()  # Flush to get the auto-generated ID
-        url.short_code = encode_base62(url.id)
-        db.commit()
-
-        return UrlResponse(short_url=f"{settings.BASE_URL}/{url.short_code}", short_code=url.short_code)
-    except IntegrityError as e:
-        print(f"IntegrityError: {e}")
-        db.rollback()
+        return service.create_short_url(request)
+    except IntegrityError:
         raise HTTPException(status_code=409, detail="Could not create short URL")
-    # while True:
-
-    #     try:
-
-    #         url = Url(
-    #             short_code=generate_random_base62_code(),
-    #             original_url=str(request.url)
-    #         )
-
-    #         db.add(url)
-    #         db.commit()
-
-    #         return {"message": "saved"}
-    #     except IntegrityError:
-    #         db.rollback()
-    #         return {"message": "short code collision, try again"}
 
 
 @router.get("/{short_code}", status_code=307)
@@ -67,31 +42,25 @@ def redirect_to_original_url(short_code: str, db: Session = Depends(get_db)):
     if cached_url:
         return RedirectResponse(
             url=cached_url,
-            status_code=307
+            status_code=307,
             # Status code will be 307 by default, but explicitly setting it for clarity
         )
 
-    url_record = (
-        db.query(Url)
-        .filter(Url.short_code == short_code)
-        .first()
-    )
+    url_record = db.query(Url).filter(Url.short_code == short_code).first()
 
     if not url_record:
-        raise HTTPException(
-            status_code=404,
-            detail="Short URL not found"
-        )
+        raise HTTPException(status_code=404, detail="Short URL not found")
 
     try:
-
-        redis_client.set(f"url:{short_code}", url_record.original_url, ex=86400)  # Cache for 24 hours
+        redis_client.set(
+            f"url:{short_code}", url_record.original_url, ex=86400
+        )  # Cache for 24 hours
 
     except RedisError as e:
         print(f"Redis error: {e}")
 
     return RedirectResponse(
         url=url_record.original_url,
-        status_code=307
+        status_code=307,
         # Status code will be 307 by default, but explicitly setting it for clarity
     )
