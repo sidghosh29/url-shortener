@@ -4,14 +4,12 @@ from redis.exceptions import RedisError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.config import settings
 from app.database import get_db
+from app.middleware.rate_limit import rate_limit
 from app.models import Url
 from app.redis_client import redis_client
 from app.schemas import UrlRequest, UrlResponse
-from app.middleware.rate_limit import rate_limit
 from app.services.url_service import UrlService
-
 
 router = APIRouter()
 
@@ -27,7 +25,9 @@ def shorten_url(request: UrlRequest, db: Session = Depends(get_db)):
     try:
         return service.create_short_url(request)
     except IntegrityError:
-        raise HTTPException(status_code=409, detail="Could not create short URL")
+        raise HTTPException(
+            status_code=409, detail="Could not create short URL"
+        ) from None
 
 
 @router.get("/{short_code}", status_code=307)

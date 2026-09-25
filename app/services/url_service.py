@@ -1,9 +1,10 @@
-from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+
+from app.config import settings
 from app.models import Url
 from app.schemas import UrlRequest, UrlResponse
 from app.utils import encode_base62
-from app.config import settings
 
 
 class UrlService:
