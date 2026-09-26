@@ -1,16 +1,15 @@
+import logging
 from pathlib import Path
 
-# import sys
-# import os
-# sys.path.append(os.path.abspath("./"))
-# print(sys.path)
+from redis.exceptions import RedisError
+
 from app.config import settings
 from app.redis_client import redis_client
 
-# LUA_SCRIPT_PATH = settings.LUA_FOLDER_PATH+"/fixed_window.lua"
 LUA_SCRIPT_PATH = Path(settings.LUA_FOLDER_PATH) / "token_bucket.lua"
 
 LUA_SCRIPT = Path(LUA_SCRIPT_PATH).read_text()
+logger = logging.getLogger(__name__)
 
 
 class TokenBucketRateLimiter:
@@ -19,7 +18,13 @@ class TokenBucketRateLimiter:
         self.window_size = window_size
 
     def allow_request(self, key: str) -> bool:
-        result = redis_client.eval(LUA_SCRIPT, 1, key, self.limit, self.window_size)
+        try:
+            result = redis_client.eval(
+                LUA_SCRIPT, 1, key, self.limit, self.window_size
+            )
+        except RedisError:
+            logger.exception("Redis rate limit check failed")
+            raise
 
         return bool(result)
 
