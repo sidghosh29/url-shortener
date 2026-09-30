@@ -7,3 +7,12 @@ venv/
 .gitignore
 tests/
 requirements-dev.txt
+.pytest_cache
+.ruff_cache
+.env.*
+load_tests/
+*.log
+.git/
+*.log
+dist/
+build/
