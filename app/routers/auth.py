@@ -12,13 +12,13 @@ from app.database import get_db
 from app.models import User
 from app.redis_client import redis_client
 from app.schemas import UserRegisterRequest
-from app.security import hash_password, verify_password
+from app.security.password import hash_password, verify_password
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-@router.post("register", status_code=201)
+@router.post("/register", status_code=201)
 def register_user(request: UserRegisterRequest, db: Session = Depends(get_db)):
     email = request.email
     username = request.username
