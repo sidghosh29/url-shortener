@@ -1,18 +1,13 @@
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException
-from redis.exceptions import RedisError
-from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 
 from app.database import get_db
 from app.models import User
-from app.redis_client import redis_client
 from app.schemas import UserRegisterRequest
-from app.security.password import hash_password, verify_password
+from app.security.password import hash_password
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +42,7 @@ def register_user(request: UserRegisterRequest, db: Session = Depends(get_db)):
             raise HTTPException(
                 status_code=409,
                 detail="Unable to create account with the provided information.",
-            )
+            ) from None
 
         logger.exception("Database constraint failed during user registration")
         raise

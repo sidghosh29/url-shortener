@@ -1,10 +1,10 @@
 import logging
 
-from app.constants import MAX_CODE_GENERATION_ATTEMPTS
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.config import settings
+from app.constants import MAX_CODE_GENERATION_ATTEMPTS
 from app.models import Url
 from app.schemas import UrlRequest, UrlResponse
 from app.utils import generate_random_base62_code
@@ -24,7 +24,7 @@ class UrlService:
                 short_code = generate_random_base62_code()
                 url.short_code = short_code
                 self.db.add(url)
-                # self.db.flush()  # Flush to get the auto-generated ID. Not required now. 
+                # self.db.flush()  # Flush to get the auto-generated ID 
                 self.db.commit()
                 logger.info("Created short URL with code %s", url.short_code)
 

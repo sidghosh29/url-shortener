@@ -1,7 +1,8 @@
 # app/security/password.py
 from pwdlib import PasswordHash
 
-password_hash = PasswordHash.recommended() # Use the recommended password hashing algorithm (currently Argon2)
+password_hash = PasswordHash.recommended() 
+# Use the recommended password hashing algorithm (currently Argon2)
 
 def hash_password(password: str) -> str:
     return password_hash.hash(password)
