@@ -10,6 +10,7 @@ configure_logging()  # noqa
 from app.database import engine  # noqa
 from app.models import Base  # noqa
 from app.routers.urls import router as urls_router  # noqa
+from app.routers.auth import router as user_router  # noqa
 
 logger = logging.getLogger(__name__)
 
@@ -41,3 +42,5 @@ def health_check():
 app.include_router(urls_router)
 # This line includes the URL router from the urls module,
 # which contains the API endpoints for URL shortening and redirection.
+
+app.include_router(user_router)

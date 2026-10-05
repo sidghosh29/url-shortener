@@ -3,7 +3,9 @@ from sqlalchemy.orm import sessionmaker
 
 from app.config import settings
 
-engine = create_engine(settings.DATABASE_URL)
+engine = create_engine(
+    settings.DATABASE_URL, pool_size=20, max_overflow=0, pool_timeout=30
+)
 
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 # autoflush=False: Prevents the session from automatically sending pending
