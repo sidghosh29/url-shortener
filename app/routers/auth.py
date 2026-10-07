@@ -6,12 +6,13 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import User
-from app.schemas import UserRegisterRequest
+from app.schemas import UserRegisterRequest, UserSignInRequest, UserSignInResponse
 from app.security.password import hash_password
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
 
 @router.post("/register", status_code=201)
 def register_user(request: UserRegisterRequest, db: Session = Depends(get_db)):
@@ -46,3 +47,8 @@ def register_user(request: UserRegisterRequest, db: Session = Depends(get_db)):
 
         logger.exception("Database constraint failed during user registration")
         raise
+
+
+@router.post("/signin", response_model=UserSignInResponse, status_code=201)
+def signin(request: UserSignInRequest, db: Session = Depends(get_db)):
+    pass

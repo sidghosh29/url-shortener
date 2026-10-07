@@ -8,6 +8,7 @@ from app.logging_config import configure_logging  # noqa
 configure_logging()  # noqa
 
 from app.database import engine  # noqa
+from app.middleware.auth import JWTAuthMiddleware  # noqa
 from app.models import Base  # noqa
 from app.routers.urls import router as urls_router  # noqa
 from app.routers.auth import router as user_router  # noqa
@@ -28,6 +29,8 @@ app = FastAPI(lifespan=lifespan)
 # cleanup code after it shuts down. In this case, it creates
 # the database tables before the app starts.
 
+app.add_middleware(JWTAuthMiddleware)
+
 
 @app.get("/")
 def root():
@@ -39,8 +42,8 @@ def health_check():
     return {"status": "healthy"}
 
 
-app.include_router(urls_router)
+app.include_router(urls_router, prefix="/api")
 # This line includes the URL router from the urls module,
 # which contains the API endpoints for URL shortening and redirection.
 
-app.include_router(user_router)
+app.include_router(user_router, prefix="/api")

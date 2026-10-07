@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     LUA_FOLDER_PATH: str
     RATE_LIMIT_CAPACITY: int
     RATE_LIMIT_WINDOW: int
+    JWT_SECRET_KEY: str
+    JWT_ALGORITHM: str
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
