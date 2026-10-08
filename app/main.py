@@ -1,13 +1,14 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 
 from app.logging_config import configure_logging  # noqa
 
 configure_logging()  # noqa
 
 from app.database import engine  # noqa
+from app.dependencies.auth import ensure_bearer  # noqa
 from app.middleware.auth import JWTAuthMiddleware  # noqa
 from app.models import Base  # noqa
 from app.routers.urls import router as urls_router  # noqa
@@ -23,7 +24,13 @@ async def lifespan(app: FastAPI):
     logger.info("Application shutdown")
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(
+    lifespan=lifespan,
+    title="URL Shortener API",
+    version="1.0.0",
+    description="A simple URL shortening service built with FastAPI",
+    dependencies=[Depends(ensure_bearer)],
+)
 # The lifespan function is an asynchronous context manager
 # that runs setup code before the application starts and
 # cleanup code after it shuts down. In this case, it creates
