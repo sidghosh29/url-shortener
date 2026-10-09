@@ -1,4 +1,3 @@
-
 from pydantic import BaseModel, HttpUrl
 
 
@@ -25,11 +24,3 @@ class UserSignInRequest(BaseModel):
 class UserSignInResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
-
-
-class AuthenticatedUser(BaseModel):
-    id: str
-    email: str
-    roles: list[str]
-    first_name: str | None = None
-    last_name: str | None = None

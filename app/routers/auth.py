@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import User
+from app.models import Role, User
 from app.schemas import UserRegisterRequest, UserSignInRequest, UserSignInResponse
 from app.security.jwt import create_jwt_token
 from app.security.password import DUMMY_HASHED_PASSWORD, hash_password, verify_password
@@ -22,11 +22,14 @@ def register_user(request: UserRegisterRequest, db: Session = Depends(get_db)):
     username = request.username
     password = request.password
 
+    member_role = db.execute(select(Role).where(Role.name == "member")).scalar_one()
+
     # Create the new user
     new_user = User(
         username=username,
         email=email,
         hashed_password=hash_password(password),
+        role_id=member_role.id,
     )
 
     try:
