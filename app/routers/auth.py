@@ -7,7 +7,12 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Role, User
-from app.schemas import UserRegisterRequest, UserSignInRequest, UserSignInResponse
+from app.schemas import (
+    UserRegisterRequest,
+    UserRegisterResponse,
+    UserSignInRequest,
+    UserSignInResponse,
+)
 from app.security.jwt import create_jwt_token
 from app.security.password import DUMMY_HASHED_PASSWORD, hash_password, verify_password
 
@@ -36,7 +41,9 @@ def register_user(request: UserRegisterRequest, db: Session = Depends(get_db)):
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
-        return new_user
+        return UserRegisterResponse(
+            username=new_user.username, email=new_user.email, role=new_user.role.name
+        )
     except IntegrityError as exc:
         db.rollback()
 
@@ -54,7 +61,7 @@ def register_user(request: UserRegisterRequest, db: Session = Depends(get_db)):
         raise
 
 
-@router.post("/signin", response_model=UserSignInResponse, status_code=201)
+@router.post("/signin", response_model=UserSignInResponse, status_code=200)
 def signin(request: UserSignInRequest, db: Session = Depends(get_db)):
     username = request.username
     password = request.password

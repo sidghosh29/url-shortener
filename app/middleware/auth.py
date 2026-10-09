@@ -22,8 +22,8 @@ class JWTAuthMiddleware(BaseHTTPMiddleware):
                 user_id = int(payload.get("sub"))
                 request.state.user_id = user_id
 
-            except ValueError as e:
-                logger.error(f"JWT decoding error: {e}")
+            except (ValueError, TypeError) as e:
+                logger.error(f"Exception occured in Auth Middleware: {e}")
                 raise HTTPException(
                     status_code=401, detail="Invalid or expired token"
                 ) from None

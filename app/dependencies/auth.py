@@ -40,8 +40,10 @@ def get_current_user(
 
 def require_roles(*required_roles: str):
     def checker(user: User = Depends(get_current_user)) -> User:
-        if user.role not in required_roles:
-            raise HTTPException(status_code=403, detail="Insufficient permissions")
+        if user.role.name not in required_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
+            )
         return user
 
     return checker

@@ -16,6 +16,12 @@ class UserRegisterRequest(BaseModel):
     password: str
 
 
+class UserRegisterResponse(BaseModel):
+    username: str
+    email: str
+    role: str
+
+
 class UserSignInRequest(BaseModel):
     username: str
     password: str
