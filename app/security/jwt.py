@@ -27,7 +27,7 @@ def decode_jwt_token(token: str):
         return jwt.decode(
             token,
             settings.JWT_SECRET_KEY,
-            algorithms=[settings.ALGORITHM],
+            algorithms=[settings.JWT_ALGORITHM],
         )
     except jwt.InvalidTokenError:
         raise ValueError("Invalid or expired token") from None

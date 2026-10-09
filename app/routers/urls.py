@@ -7,8 +7,9 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.dependencies.auth import get_current_user
 from app.middleware.rate_limit import rate_limit
-from app.models import Url
+from app.models import Url, User
 from app.redis_client import redis_client
 from app.schemas import UrlRequest, UrlResponse
 from app.services.url_service import UrlService
@@ -24,11 +25,19 @@ router = APIRouter()
     response_model=UrlResponse,
     dependencies=[Depends(rate_limit)],
 )
-def shorten_url(request: UrlRequest, db: Session = Depends(get_db)):
+def shorten_url(
+    request: UrlRequest,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    logger.info(
+        f"Received request to shorten URL: {request.url} from user: {user.username}"
+    )
     service = UrlService(db)
     try:
         return service.create_short_url(request)
     except IntegrityError:
+        logger.exception("URL Service failed to create short URL")
         raise HTTPException(
             status_code=409, detail="Could not create short URL"
         ) from None

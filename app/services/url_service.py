@@ -24,12 +24,12 @@ class UrlService:
                 short_code = generate_random_base62_code()
                 url.short_code = short_code
                 self.db.add(url)
-                # self.db.flush()  # Flush to get the auto-generated ID 
+                # self.db.flush()  # Flush to get the auto-generated ID
                 self.db.commit()
                 logger.info("Created short URL with code %s", url.short_code)
 
                 return UrlResponse(
-                    short_url=f"{settings.BASE_URL}/{url.short_code}",
+                    short_url=f"{settings.BASE_URL}/api/{url.short_code}",
                     short_code=url.short_code,
                 )
             except IntegrityError as exc:
@@ -39,6 +39,5 @@ class UrlService:
                     logger.warning(f"Short code collision for {short_code}")
                     continue  # Try generating a new short code
                 raise  # Re-raise other integrity errors
-
 
         raise RuntimeError("Unable to generate a unique short code")
