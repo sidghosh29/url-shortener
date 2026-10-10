@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     BASE_URL: str
     REDIS_URL: str
+    SLOWAPI_STORAGE_URI: str | None = None
     LUA_FOLDER_PATH: str
     RATE_LIMIT_CAPACITY: int
     RATE_LIMIT_WINDOW: int

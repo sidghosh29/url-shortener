@@ -7,6 +7,7 @@ Create Date: 2026-10-09 09:58:37.835218
 """
 
 from collections.abc import Sequence
+from datetime import UTC, datetime
 
 import sqlalchemy as sa
 from alembic import op
@@ -30,7 +31,34 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_roles_name"), "roles", ["name"], unique=True)
-    op.add_column("users", sa.Column("role_id", sa.Integer(), nullable=False))
+    # Add the FK nullable first so databases with existing users can be upgraded.
+    op.add_column("users", sa.Column("role_id", sa.Integer(), nullable=True))
+
+    roles = sa.table(
+        "roles",
+        sa.column("id", sa.Integer()),
+        sa.column("name", sa.String(length=20)),
+        sa.column("created_at", sa.DateTime(timezone=True)),
+        sa.column("updated_at", sa.DateTime(timezone=True)),
+    )
+    users = sa.table("users", sa.column("role_id", sa.Integer()))
+    now = datetime.now(UTC)
+    op.bulk_insert(
+        roles,
+        [
+            {"name": "member", "created_at": now, "updated_at": now},
+            {"name": "admin", "created_at": now, "updated_at": now},
+        ],
+    )
+    member_role_id = op.get_bind().execute(
+        sa.select(roles.c.id).where(roles.c.name == "member")
+    ).scalar_one()
+    op.execute(
+        users.update()
+        .where(users.c.role_id.is_(None))
+        .values(role_id=member_role_id)
+    )
+    op.alter_column("users", "role_id", existing_type=sa.Integer(), nullable=False)
     op.create_foreign_key(
         None, "users", "roles", ["role_id"], ["id"], ondelete="RESTRICT"
     )

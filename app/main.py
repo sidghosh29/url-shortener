@@ -2,6 +2,8 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from app.logging_config import configure_logging  # noqa
 
@@ -11,6 +13,7 @@ from app.database import engine  # noqa
 from app.dependencies.auth import ensure_bearer  # noqa
 from app.middleware.auth import JWTAuthMiddleware  # noqa
 from app.models import Base  # noqa
+from app.rate_limiters.slowapi import limiter  # noqa
 from app.routers.urls import router as urls_router  # noqa
 from app.routers.auth import router as user_router  # noqa
 
@@ -31,10 +34,11 @@ app = FastAPI(
     description="A simple URL shortening service built with FastAPI",
     dependencies=[Depends(ensure_bearer)],
 )
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # The lifespan function is an asynchronous context manager
 # that runs setup code before the application starts and
-# cleanup code after it shuts down. In this case, it creates
-# the database tables before the app starts.
+# cleanup code after it shuts down.
 
 app.add_middleware(JWTAuthMiddleware)
 

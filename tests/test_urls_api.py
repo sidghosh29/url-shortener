@@ -1,7 +1,8 @@
-def test_create_short_url(client):
+def test_create_short_url(client, auth_headers):
     response = client.post(
         "/api/shorten",
         json={"url": "https://www.google.com"},
+        headers=auth_headers,
     )
 
     assert response.status_code == 201
@@ -12,11 +13,12 @@ def test_create_short_url(client):
     assert "short_url" in data
 
 
-def test_short_url_redirect(client):
+def test_short_url_redirect(client, auth_headers):
     # First, create a short URL
     response = client.post(
         "/api/shorten",
         json={"url": "https://www.google.com"},
+        headers=auth_headers,
     )
     assert response.status_code == 201
     data = response.json()

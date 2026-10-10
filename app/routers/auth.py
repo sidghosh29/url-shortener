@@ -1,12 +1,13 @@
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Role, User
+from app.rate_limiters.slowapi import limiter
 from app.schemas import (
     UserRegisterRequest,
     UserRegisterResponse,
@@ -62,9 +63,14 @@ def register_user(request: UserRegisterRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/signin", response_model=UserSignInResponse, status_code=200)
-def signin(request: UserSignInRequest, db: Session = Depends(get_db)):
-    username = request.username
-    password = request.password
+@limiter.limit("5/minute")
+def signin(
+    request: Request,
+    credentials: UserSignInRequest,
+    db: Session = Depends(get_db),
+):
+    username = credentials.username
+    password = credentials.password
 
     stmt = select(User).where(User.username == username)
     user = db.execute(stmt).scalar_one_or_none()
